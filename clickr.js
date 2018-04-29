@@ -6,22 +6,29 @@ export default class Clickr {
         buttonElement,
         displayElement,
         counterElement,
+        bestResultElement,
         resetElement
     }) {
+        this.time = time;
         this.buttonElement = buttonElement;
         this.displayElement = displayElement;
         this.counterElement = counterElement;
+        this.bestResultElement = bestResultElement;
         this.resetElement = resetElement;
-        this._count = 0;
-        this.time = time;
+        this.store = window.localStorage;
         this.timer = new Timer(
             time,
             this.handleTick.bind(this),
-            this.end.bind(this)
+            this.handleEnd.bind(this)
         );
         this.isGameOver = false;
+        this._count = 0;
 
         this.init();
+    }
+
+    get count() {
+        return this._count;
     }
 
     init() {
@@ -35,16 +42,15 @@ export default class Clickr {
             this.handleReset.bind(this)
         );
 
-        this.render();
+        this.initialRender();
     }
 
-    render() {
-        this.displayElement.textContent = this.time;
+    initialRender() {
+        this.displayElement.textContent = this.time / 1000;
         this.counterElement.textContent = this.count;
-    }
-
-    get count() {
-        return this._count;
+        this.bestResultElement.textContent = `Best result: ${this.store.getItem(
+            'clickrBestResult'
+        ) || 0}`;
     }
 
     increment() {
@@ -52,9 +58,17 @@ export default class Clickr {
         this.counterElement.textContent = this.count;
     }
 
-    end() {
+    handleEnd() {
         this.isGameOver = true;
         this.displayElement.textContent = 'Game over';
+
+        if (this.count > this.store.getItem('clickrBestResult')) {
+            this.store.setItem('clickrBestResult', this.count);
+            this.bestResultElement.textContent = `Best result: ${this.store.getItem(
+                'clickrBestResult'
+            )}`;
+        }
+        this.buttonElement.classList.add('hinge');
     }
 
     handleClick() {
@@ -68,13 +82,14 @@ export default class Clickr {
     }
 
     handleTick() {
-        this.displayElement.textContent = this.timer.time;
+        this.displayElement.textContent = this.timer.time / 1000;
     }
 
     handleReset() {
         this._count = 0;
         this.timer.reset(this.time);
         this.isGameOver = false;
-        this.render();
+        this.buttonElement.classList.remove('hinge');
+        this.initialRender();
     }
 }
