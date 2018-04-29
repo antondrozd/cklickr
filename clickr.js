@@ -45,17 +45,29 @@ export default class Clickr {
         this.initialRender();
     }
 
-    initialRender() {
-        this.displayElement.textContent = this.time / 1000;
-        this.counterElement.textContent = this.count;
+    renderCount() {
+        this.counterElement.textContent = `Score: ${this.count}`;
+    }
+
+    renderBestResult() {
         this.bestResultElement.textContent = `Best result: ${this.store.getItem(
             'clickrBestResult'
         ) || 0}`;
     }
 
+    renderTime() {
+        this.displayElement.textContent = this.timer.time / 1000;
+    }
+
+    initialRender() {
+        this.renderTime();
+        this.renderCount();
+        this.renderBestResult();
+    }
+
     increment() {
         this._count += 1;
-        this.counterElement.textContent = this.count;
+        this.renderCount();
     }
 
     handleEnd() {
@@ -64,9 +76,7 @@ export default class Clickr {
 
         if (this.count > this.store.getItem('clickrBestResult')) {
             this.store.setItem('clickrBestResult', this.count);
-            this.bestResultElement.textContent = `Best result: ${this.store.getItem(
-                'clickrBestResult'
-            )}`;
+            this.renderBestResult();
         }
         this.buttonElement.classList.add('hinge');
     }
@@ -82,7 +92,7 @@ export default class Clickr {
     }
 
     handleTick() {
-        this.displayElement.textContent = this.timer.time / 1000;
+        this.renderTime();
     }
 
     handleReset() {
